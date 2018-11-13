@@ -69,7 +69,7 @@
             console.log(' form submitted')
           let user_input = $( 'textarea#userInputTextArea' ).val()
 
-          {# store user id (session id)  , user answer#}
+
           socket.emit( 'user_answer_event', {
             user_name : "anonymous",
             message : user_input

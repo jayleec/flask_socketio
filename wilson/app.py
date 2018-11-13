@@ -1,13 +1,18 @@
 from threading import Lock
-from flask import Flask, request
-
+from celery import Celery
+from flask import Flask
 from flask_socketio import SocketIO, emit, join_room, leave_room, send, rooms
-from flask_session import Session
-from flask_login import LoginManager, UserMixin
-
 from wilson.blueprints.page import page
-from wilson.extensions import debug_toolbar
-
+from wilson.blueprints.contact import contact
+from wilson.blueprints.user import user
+from wilson.blueprints.user.models import User
+from wilson.extensions import (
+    debug_toolbar,
+    mail,
+    csrf,
+    db,
+    login_manager
+)
 
 #  TODO: delete client_list
 client_list = []
@@ -15,19 +20,19 @@ client_list = []
 async_mode = "eventlet"
 thread = None
 thread_lock = Lock()
-app = Flask(__name__, instance_relative_config=True)
-socketio = SocketIO(app, async_mode=async_mode, manage_session=False)
-
 
 CELERY_TASK_LIST = [
     'wilson.blueprints.contact.tasks',
+    'wilson.blueprints.user.tasks',
 ]
 
 
 def create_app(settings_override=None):
+    app = Flask(__name__, instance_relative_config=True)
     app.config.from_object('config.settings')
     app.config.from_pyfile('settings.py', silent=True)
-    app.config['SECRET_KEY'] = 'somthingsecret!'
+
+    socketio = SocketIO(app, async_mode=async_mode, manage_session=False)
 
     @socketio.on('connect', namespace='/test')
     def connected():
@@ -44,11 +49,10 @@ def create_app(settings_override=None):
     @socketio.on('user_answer_event', namespace='/test')
     def handle_user_answer_event(json, methods=['GET', 'POST']):
         print('[user_answer_event] received my event json : ' + str(json))
-        roomIds = rooms()
-        print('[user_answer_event] all rooms : ', roomIds)
-        roomId = get_first_item(roomIds)
-        print("[user_answer_event] ", roomId)
-        client_list.append(roomId)
+        room_ids = rooms()
+        room_id = get_first_item(room_ids)
+        print("[user_answer_event] ", room_id)
+        client_list.append(room_id)
         #  store  REPLY
         emit('my response', json['message'], callback=messageReceived, namespace='/test')
 
@@ -58,8 +62,6 @@ def create_app(settings_override=None):
     @socketio.on('join', namespace='/test')
     def on_join(data):
         username = data['username']
-        # room = data['room']
-        # join_room(room_id)
         print('[join] joined room number ' + str())
         # emit('join response', data, callback=userJoined, namespace='/test')
         # send(username + ' has entered the room.', room=room)
@@ -72,10 +74,14 @@ def create_app(settings_override=None):
         leave_room(room)
         send(username + ' has left the room.', room=room)
 
-    login = LoginManager(app)
-    Session(app)
+    # login = LoginManager(app)
+    # Session(app)
 
     app.register_blueprint(page)
+    app.register_blueprint(contact)
+    app.register_blueprint(user)
+    extensions(app)
+    authentication(app, User)
 
     if __name__ == '__main__':
         socketio.run(app)
@@ -83,16 +89,56 @@ def create_app(settings_override=None):
     return app
 
 
+def create_celery_app(app=None):
+    """
+    Create a new Celery object and tie together the Celery config to the app's
+    config. Wrap all tasks in the context of the application.
 
-def background_thread():
-    count = 0
-    while True:
-        socketio.sleep(10)
-        count += 1
-        socketio.emit('my response',
-                      {'data': 'Server generated event', 'count': count},
-                      namespace='/test')
+    :param app: Flask app
+    :return: Celery app
+    """
+    app = app or create_app()
 
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'],
+                    include=CELERY_TASK_LIST)
+    celery.conf.update(app.config)
+    task_base = celery.Task
+
+    class ContextTask(task_base):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return task_base.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
+
+def authentication(app, user_model):
+    """
+    Initialize the Flask-Login extension (mutates the app passed in).
+
+    :param app: Flask application instance
+    :param user_model: Model that contains the authentication information
+    :type user_model: SQLAlchemy model
+    :return: None
+    """
+    login_manager.login_view = 'user.login'
+
+    @login_manager.user_loader
+    def load_user(uid):
+        return user_model.query.get(uid)
+
+
+# def background_thread():
+#     count = 0
+#     while True:
+#         socketio.sleep(10)
+#         count += 1
+#         socketio.emit('my response',
+#                       {'data': 'Server generated event', 'count': count},
+#                       namespace='/test')
 
 def extensions(app):
     """
@@ -102,5 +148,9 @@ def extensions(app):
     :return: None
     """
     debug_toolbar.init_app(app)
+    mail.init_app(app)
+    csrf.init_app(app)
+    db.init_app(app)
+    login_manager.init_app(app)
 
     return None

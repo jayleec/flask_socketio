@@ -1,5 +1,9 @@
-FROM python:3-slim
+#FROM python:3-slim
+FROM python:3.6-slim
 MAINTAINER Jae Kyung Lee <jklee@atommerce.com>
+
+RUN apt-get update && apt-get install -qq -y \
+  build-essential libpq-dev --no-install-recommends
 
 ENV INSTALL_PATH /wilson
 RUN mkdir -p $INSTALL_PATH

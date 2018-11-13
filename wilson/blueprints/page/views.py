@@ -8,8 +8,7 @@ async_mode = 'eventlet'
 @page.route('/')
 def home():
     #  add response cookie
-    # return render_template('page/home.html', async_mode=async_mode)
-    return render_template('page/home.html')
+    return render_template('page/home.html', async_mode=async_mode)
 
 
 @page.route('/terms')
