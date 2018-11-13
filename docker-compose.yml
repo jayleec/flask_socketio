@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  website:
+    build: .
+    command: >
+      gunicorn -b 0.0.0.0:8000
+      --worker-class eventlet -w 1
+      --access-logfile -
+      --reload
+      "wilson.app:create_app()"
+    environment:
+      FLASK_DEBUG: 1
+      FLASK_ENV: development
+      PYTHONUNBUFFERED: 'true'
+    volumes:
+      - '.:/wilson'
+    ports:
+      - '8000:8000'

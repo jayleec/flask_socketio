@@ -1,0 +1,1 @@
+from wilson.blueprints.page.views import page

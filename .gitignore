@@ -1,0 +1,10 @@
+*.DS_Store
+venv
+
+# User-specific stuff
+.idea/Wilson_prototype.iml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+.idea/vcs.xml

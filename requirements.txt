@@ -1,0 +1,27 @@
+Flask==1.0.2
+flask-socketio
+eventlet==0.24.1
+gunicorn==19.9.0
+flask-sqlalchemy
+Flask-Session==0.3.1
+psycopg2==2.7.6
+# psycopg2-binary
+
+# API documentation.
+flasgger
+
+# CLI.
+Click==7.0
+
+# Data and workers.
+# redis==2.10.6
+# celery==4.2.1
+
+# Forms.
+Flask-WTF==0.14.2
+WTForms-Components==0.10.3
+
+# Extensions.
+Flask-Login==0.4.0
+flask-debugtoolbar==0.10.1
+# Flask-Mail==0.9.1
