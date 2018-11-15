@@ -1,8 +1,9 @@
 from threading import Lock
 from celery import Celery
-from flask import Flask
+from flask import Flask, jsonify, json
 from flask_socketio import SocketIO, emit, join_room, leave_room, send, rooms
 from wilson.blueprints.page import page
+from wilson.blueprints.api import api
 from wilson.blueprints.contact import contact
 from wilson.blueprints.user import user
 from wilson.blueprints.user.models import User
@@ -13,6 +14,9 @@ from wilson.extensions import (
     db,
     login_manager
 )
+# save user reply
+from wilson.blueprints.api.forms import UserReplyForm
+from wilson.blueprints.api.models import Reply
 
 #  TODO: delete client_list
 client_list = []
@@ -46,15 +50,29 @@ def create_app(settings_override=None):
     def messageReceived(methods=['GET', 'POST']):
         print('message was received!!!')
 
+    def save_user_reply(json):
+        print('[home] post validate_on_submit')
+        r = Reply()
+        r.question_id = json['question_id']
+        r.user_id = json['user_id']
+        r.feedback_id = json['feedback_id']
+        r.message = json['message']
+        r.save()
+        return None
+
     @socketio.on('user_answer_event', namespace='/test')
-    def handle_user_answer_event(json, methods=['GET', 'POST']):
-        print('[user_answer_event] received my event json : ' + str(json))
+    def handle_user_answer_event(json_data, methods=['GET', 'POST']):
         room_ids = rooms()
         room_id = get_first_item(room_ids)
-        print("[user_answer_event] ", room_id)
-        client_list.append(room_id)
-        #  store  REPLY
-        emit('my response', json['message'], callback=messageReceived, namespace='/test')
+        msg = json_data['message']
+        data = {
+            'question_id': '0',
+            'user_id': room_id,
+            'feedback_id': '0',
+            'message': msg}
+        # store reply
+        save_user_reply(data)
+        emit('my response', msg, callback=messageReceived, namespace='/test')
 
     def userJoined():
         print('[userJoined] new user joined')
@@ -63,8 +81,6 @@ def create_app(settings_override=None):
     def on_join(data):
         username = data['username']
         print('[join] joined room number ' + str())
-        # emit('join response', data, callback=userJoined, namespace='/test')
-        # send(username + ' has entered the room.', room=room)
 
     @socketio.on('leave', namespace='/test')
     def on_leave(data):
@@ -80,6 +96,7 @@ def create_app(settings_override=None):
     app.register_blueprint(page)
     app.register_blueprint(contact)
     app.register_blueprint(user)
+    app.register_blueprint(api)
     extensions(app)
     authentication(app, User)
 

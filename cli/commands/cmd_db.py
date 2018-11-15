@@ -6,6 +6,8 @@ from wilson.app import create_app
 from wilson.extensions import db
 from wilson.blueprints.user.models import User
 
+from wilson.blueprints.api.models import Reply
+
 # Create an app context for the database connection.
 app = create_app()
 db.app = app
@@ -41,11 +43,6 @@ def init(with_testdb):
 
 @click.command()
 def seed():
-    """
-    Seed the database with an initial user.
-
-    :return: User instance
-    """
     if User.find_by_identity(app.config['SEED_ADMIN_EMAIL']) is not None:
         return None
 
@@ -56,6 +53,18 @@ def seed():
     }
 
     return User(**params).save()
+
+
+@click.command()
+def seed_wilson_test():
+    r = Reply()
+    r.id = 'init id'
+    r.question_id = '1'
+    r.user_id = 'initial message'
+    r.feedback_id = 'initial message'
+    r.message = 'initial message'
+
+    return r
 
 
 @click.command()
@@ -70,7 +79,8 @@ def reset(ctx, with_testdb):
     :return: None
     """
     ctx.invoke(init, with_testdb=with_testdb)
-    ctx.invoke(seed)
+    # ctx.invoke(seed)
+    ctx.invoke(seed_wilson_test)
 
     return None
 

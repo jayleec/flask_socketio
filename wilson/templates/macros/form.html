@@ -27,6 +27,12 @@
   {{ f(class=css_class, **kwargs) }}
 {%- endmacro -%}
 
+{# Render a form field. #}
+{%- macro field_submit(f, css_class='form-control') -%}
+  {{ f(class=css_class, **kwargs) }}
+  {{ caller () }}
+{%- endmacro -%}
+
 
 {# Render a checkbox field. #}
 {%- macro checkbox_field(f) -%}

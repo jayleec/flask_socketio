@@ -4,13 +4,13 @@
 {% block meta_description %}AI therapeutic health services{% endblock %}
 
 {% block body %}
-
 {#  <div class="container sm-margin-top">#}
 
 {#    <div class="row text-center lg-margin-bottom">#}
 {#      <h1>심리치료 챗봇</h1>#}
 
  <section id="demo">
+
 	    <div class="vertical-align">
 	        <div class="container">
 	            <div class="row">
@@ -24,12 +24,12 @@
                                         <div class="message to ready">당신 성격의 강점에 대해 말해 주세요.</div>
                                     </div>
                                 </div>
-
                                 <form id="convForm" class="convFormDynamic">
                                     <textarea id="userInputTextArea" rows="1" placeholder="Type Here" class="userInputDynamic" style="overflow: hidden; overflow-wrap: break-word; resize: horizontal; height: 32px;"></textarea>
                                     <button type="submit" class="submit">▶</button>
                                     <span class="clear"></span>
                                 </form>
+
 	                        </div>
 	                    </div>
 	                </div>
@@ -38,19 +38,6 @@
 	    </div>
 	</section>
 
-
-<!--chat start-->
-{#    <h3 style='color: #ccc;font-size: 30px;'>No message yet..</h3>#}
-{#    <div class="message_holder"></div>#}
-{##}
-{#    <form action="" method="POST">#}
-{#        <div class="user-input-area">#}
-{#            <textarea class="form-control" id="userInputTextArea" rows="3" placeholder="질문"  onclick="return setTextAreaEmpty()"></textarea>#}
-{#        </div>#}
-{#        <button class="btn btn-primary" type="submit">질문하기</button>#}
-{#    </form>#}
-{##}
-{#    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->#}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script type="text/javascript">
@@ -60,15 +47,9 @@
       var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
 
       socket.on( 'connect', function() {
-        console.log("user has been connected!!!!")
-
-
         var form = $( 'form#convForm' ).on( 'submit', function( e ) {
-          e.preventDefault()
-
-            console.log(' form submitted')
-          let user_input = $( 'textarea#userInputTextArea' ).val()
-
+          e.preventDefault();
+          let user_input = $( 'textarea#userInputTextArea' ).val();
 
           socket.emit( 'user_answer_event', {
             user_name : "anonymous",
@@ -76,18 +57,9 @@
           } );
           $( 'textarea#userInputTextArea' ).val( '' ).focus();
         } )
-      } ) // end of socket.on
+      } ); // end of socket.on
+
       socket.on( 'my response', function( msg ) {
-        console.log( "my response  ", msg );
-
-
-        /****
-        if( typeof msg.user_name !== 'undefined' ) {
-          $( 'h3' ).remove()
-          $( 'div.message_holder' ).append( '<div><b style="color: #000">'+msg.user_name+'</b> '+msg.message +  '</div>' )
-        }
-         ***/
-
         addUserMessage(msg)
       });
 
@@ -153,9 +125,6 @@
 		}
 	</script>
 	<script>
-
-
-
         function addSpinner() {
             var wrapper = $('#chat')
             $(wrapper).append('<div class="wrapper-messages"><div class="spinLoader"></div>');

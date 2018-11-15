@@ -110,6 +110,7 @@ def password_reset():
 @anonymous_required()
 def signup():
     form = SignupForm()
+    print('[sign up] form. : ' + str(form.email.data))
 
     if form.validate_on_submit():
         u = User()
