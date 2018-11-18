@@ -9,6 +9,11 @@
 {#    <div class="row text-center lg-margin-bottom">#}
 {#      <h1>심리치료 챗봇</h1>#}
 
+<h3> Authenticated check</h3>
+{% if current_user.is_authenticated %}
+  <h3> 현재 사용자 {{ current_user.room_id }}! </h3>
+{% endif %}
+
  <section id="demo">
 
 	    <div class="vertical-align">
@@ -53,7 +58,8 @@
 
           socket.emit( 'user_answer_event', {
             user_name : "anonymous",
-            message : user_input
+            message : user_input,
+            q_id: 0
           } );
           $( 'textarea#userInputTextArea' ).val( '' ).focus();
         } )
@@ -63,9 +69,11 @@
         addUserMessage(msg)
       });
 
+      /*****
       socket.on( 'join response', function( data ) {
         console.log( "join response  ", data );
       });
+       ******/
 
       function setTextAreaEmpty() {
           document.getElementById('userInputTextArea').focus();

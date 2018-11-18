@@ -1,5 +1,5 @@
-from flask import Blueprint, jsonify, request, abort
-from wilson.blueprints.api.models import Reply
+from flask import Blueprint, jsonify, request, abort, json
+from wilson.blueprints.api.models import Reply, Feedback
 from wilson.blueprints.api.forms import UserReplyForm
 
 api = Blueprint('api', __name__)
@@ -30,11 +30,11 @@ def user_answer(user_id=None):
 
 @api.route('/wilson/api/v1/feedback/<feedback_id>', methods=['GET'])
 def get_feedback(feedback_id=None):
-    print('[get_feedback] ')
+    print('[get_feedback]')
     response = jsonify({
         'message': 'some feedback',
         'result': 'success',
         'feedback_id': feedback_id
     })
-    response.status_code = 201
+    response.status_code = 200
     return response

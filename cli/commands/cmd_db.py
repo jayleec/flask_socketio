@@ -4,7 +4,7 @@ from sqlalchemy_utils import database_exists, create_database
 
 from wilson.app import create_app
 from wilson.extensions import db
-from wilson.blueprints.user.models import User
+from wilson.blueprints.api.models import Users
 
 from wilson.blueprints.api.models import Reply
 
@@ -29,6 +29,7 @@ def init(with_testdb):
     :param with_testdb: Create a test database
     :return: None
     """
+    db.reflect()
     db.drop_all()
     db.create_all()
 
@@ -40,19 +41,19 @@ def init(with_testdb):
 
     return None
 
-
-@click.command()
-def seed():
-    if User.find_by_identity(app.config['SEED_ADMIN_EMAIL']) is not None:
-        return None
-
-    params = {
-        'role': 'admin',
-        'email': app.config['SEED_ADMIN_EMAIL'],
-        'password': app.config['SEED_ADMIN_PASSWORD']
-    }
-
-    return User(**params).save()
+#
+# @click.command()
+# def seed():
+#     if Users.find_by_identity(app.config['SEED_ADMIN_EMAIL']) is not None:
+#         return None
+#
+#     params = {
+#         'role': 'admin',
+#         'email': app.config['SEED_ADMIN_EMAIL'],
+#         'password': app.config['SEED_ADMIN_PASSWORD']
+#     }
+#
+#     return Users(**params).save()
 
 
 @click.command()
@@ -86,5 +87,5 @@ def reset(ctx, with_testdb):
 
 
 cli.add_command(init)
-cli.add_command(seed)
+# cli.add_command(seed)
 cli.add_command(reset)
